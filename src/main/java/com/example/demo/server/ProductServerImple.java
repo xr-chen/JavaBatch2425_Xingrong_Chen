@@ -2,10 +2,12 @@ package com.example.demo.server;
 
 import com.example.demo.dao.ProductRepository;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -25,6 +27,11 @@ public class ProductServerImple implements ProductServer {
     @Override
     public Product saveProduct(Product product) {
         return productRepository.save(new Product(product.getName(), product.getType(), product.getPrice(), product.getQuantity()));
+    }
+
+    @Override
+    public Product updateProduct(Product product) {
+        return productRepository.save(product);
     }
 
     @Override

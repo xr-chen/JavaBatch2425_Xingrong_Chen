@@ -15,7 +15,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -70,7 +72,7 @@ public class ProductRestController {
         productObj.setType(product.getType());
         productObj.setQuantity(product.getQuantity());
 
-        productServer.saveProduct(productObj);
+        productServer.updateProduct(productObj);
         return new ResponseEntity<>(productObj, HttpStatus.OK);
     }
 
@@ -79,24 +81,15 @@ public class ProductRestController {
         Product saveProduct = productServer.saveProduct(product);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(ucBuilder.path("/api/products/{id}").buildAndExpand(product.getId()).toUri());
-        return new ResponseEntity<>(new ResponseMessage("USER_CREATED",saveProduct), headers, HttpStatus.CREATED);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> exceptionHandler(Exception ex) {
-        ErrorResponse error = new ErrorResponse();
-        error.setErrorCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.setMessage(ex.getMessage());
-        logger.error("Controller Error",ex);
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ResponseMessage("PRODUCT_CREATED",saveProduct), headers, HttpStatus.CREATED);
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ErrorResponse> exceptionHandlerUserNotFound(Exception ex) {
+    public ResponseEntity<Object> exceptionHandlerUserNotFound(Exception ex) {
         logger.error("Cannot find user");
-        ErrorResponse error = new ErrorResponse();
-        error.setErrorCode(HttpStatus.NOT_FOUND.value());
-        error.setMessage(ex.getMessage());
+        Map<String, Object> error = new HashMap<>();
+        error.put("code", HttpStatus.NOT_FOUND.value());
+        error.put("message", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 }

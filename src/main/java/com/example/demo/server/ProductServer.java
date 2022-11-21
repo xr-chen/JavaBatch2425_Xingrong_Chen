@@ -9,6 +9,7 @@ public interface ProductServer {
 
     Product saveProduct(Product product);
 
+    Product updateProduct(Product product);
 
     void deleteProductById(long id);
 
