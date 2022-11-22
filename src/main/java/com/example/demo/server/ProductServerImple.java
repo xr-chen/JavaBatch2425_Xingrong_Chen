@@ -2,18 +2,15 @@ package com.example.demo.server;
 
 import com.example.demo.dao.ProductRepository;
 import com.example.demo.entity.Product;
-import com.example.demo.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service
 public class ProductServerImple implements ProductServer {
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     @Autowired
     ProductServerImple(ProductRepository productRepository) {

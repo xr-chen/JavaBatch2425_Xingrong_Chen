@@ -3,8 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.entity.Product;
 import com.example.demo.exception.ProductNotFoundException;
 import com.example.demo.server.ProductServer;
-import com.example.demo.util.ErrorResponse;
-import com.example.demo.util.ResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +10,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
@@ -22,7 +28,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class ProductRestController {
-    private ProductServer productServer;
+    private final ProductServer productServer;
 
     private static Logger logger = LoggerFactory.getLogger(ProductRestController.class);
 
@@ -50,13 +56,16 @@ public class ProductRestController {
     }
 
     @DeleteMapping(path = "/products/{id}")
-    public ResponseEntity<ResponseMessage> deleteProduct(@PathVariable("id") long id) {
+    public ResponseEntity<Object> deleteProduct(@PathVariable("id") long id) {
         Product product = productServer.findById(id);
         if (product == null) {
             throw new ProductNotFoundException();
         }
         productServer.deleteProductById(id);
-        return new ResponseEntity<>(new ResponseMessage("PRODUCT_DELETED", product), HttpStatus.OK);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "PRODUCT_DELETED");
+        response.put("body", product);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping(value = "/products/{id}")
@@ -77,16 +86,19 @@ public class ProductRestController {
     }
 
     @PostMapping(value = "/products")
-    public ResponseEntity<ResponseMessage> createUser(@Validated @RequestBody Product product, UriComponentsBuilder ucBuilder) {
+    public ResponseEntity<Object> createUser(@Validated @RequestBody Product product, UriComponentsBuilder ucBuilder) {
         Product saveProduct = productServer.saveProduct(product);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(ucBuilder.path("/api/products/{id}").buildAndExpand(product.getId()).toUri());
-        return new ResponseEntity<>(new ResponseMessage("PRODUCT_CREATED",saveProduct), headers, HttpStatus.CREATED);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "PRODUCT_CREATED");
+        response.put("body", saveProduct);
+        return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<Object> exceptionHandlerUserNotFound(Exception ex) {
-        logger.error("Cannot find user");
+        logger.error("Cannot find product");
         Map<String, Object> error = new HashMap<>();
         error.put("code", HttpStatus.NOT_FOUND.value());
         error.put("message", ex.getMessage());
